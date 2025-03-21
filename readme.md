@@ -10,7 +10,7 @@ A collection of mini-games built with Python and Pygame, including Car Game, Sna
 ## Prerequisites
 - Python 3.6 or higher
 - Pygame library (`pip install pygame`)
-
+- install git('sudo apt install git')
 ## How to Run
 1. Clone this repository to your local machine:
 
@@ -19,7 +19,7 @@ A collection of mini-games built with Python and Pygame, including Car Game, Sna
       - cd SimpleMiniGames
 
 3. Install the required dependencies:
-            -   pip install pygame
+     -   pip install pygame
 
 4. Run the launcher:
       -python launcher.py
