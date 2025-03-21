@@ -35,7 +35,7 @@ try:
     small_font = pygame.font.Font("LauncherAssets/PressStart2P-Regular.ttf", 16)  # For attribution and slider
     print("Custom font loaded: PressStart2P-Regular.ttf")
 except FileNotFoundError:
-    font = pygame.font.SysFont("monospace", 24, bold=True)
+    font = pygame.font.SysFont("monospace", 21, bold=True)
     button_font = pygame.font.SysFont("monospace", 18, bold=True)
     small_font = pygame.font.SysFont("monospace", 16, bold=True)
     print("Font not found, using default font")
