@@ -122,15 +122,15 @@ start_y = HEIGHT // 2 - 100
 car_game_button = Button("Car Game", WIDTH // 2 - button_width // 2, start_y, button_width, button_height, WHITE, PASTEL_PINK, launch_car_game)
 snake_game_button = Button("Snake Game", WIDTH // 2 - button_width // 2, start_y + button_height + button_spacing, button_width, button_height, WHITE, PASTEL_PINK, launch_snake_game)
 flappy_bird_button = Button("Flappy Bird", WIDTH // 2 - button_width // 2, start_y + 2 * (button_height + button_spacing), button_width, button_height, WHITE, PASTEL_PINK, launch_flappy_bird)
-music_button = Button("Music: ON", WIDTH // 2 - 100, HEIGHT - 50, 200, 40, WHITE, PASTEL_PINK, toggle_music)
+music_button = Button("Music: ON", WIDTH // 2.5 - 31, HEIGHT - 80, 220, 38, WHITE, PASTEL_PINK, toggle_music)
 
 # Title text
 title_text = font.render("SimpleMiniGames", True, WHITE)
 title_rect = title_text.get_rect(center=(WIDTH // 2, 100))
 
 # Attribution text
-attribution_text = small_font.render('Music: "Pixel Peeker Polka - faster" by Kevin MacLeod', True, WHITE)
-attribution_rect = attribution_text.get_rect(center=(WIDTH // 2, HEIGHT - 20))
+attribution_text = small_font.render('Music: "Pixel Peeker Polka-faster"by Kevin MacLeod', True, WHITE)
+attribution_rect = attribution_text.get_rect(center=(WIDTH // 2, HEIGHT - 11))
 
 # Main loop
 running = True
