@@ -1,1 +1,1 @@
-python config.py
+python launcher.py

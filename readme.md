@@ -53,3 +53,8 @@ Then click "Play" or press Enter.
 
 ## Issues
 If you encounter any problems while running the games, please create an issue on this repository: [New Issue](https://github.com/R2Ksanu/SimpleMiniGames/issues/new)
+
+## Credits
+Background music: "Pixel Peeker Polka - faster" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+Source: https://incompetech.com
