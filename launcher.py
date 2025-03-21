@@ -3,6 +3,8 @@ import subprocess
 import sys
 import os
 import random
+import time
+import json
 
 # Initialize Pygame
 pygame.init()
@@ -24,7 +26,7 @@ PASTEL_BLUE = (173, 216, 230)  # Fallback background color
 PASTEL_PINK = (255, 182, 193)  # Hover color
 SHADOW_COLOR = (80, 80, 80)  # Lighter shadow for better contrast
 BUTTON_COLOR = (255, 165, 0)  # Orange color for buttons
-OVERLAY_COLOR = (50, 50, 50, 200)  # Semi-transparent overlay for settings menu
+OVERLAY_COLOR = (50, 50, 50, 200)  # Semi-transparent overlay
 
 # Load fonts
 try:
@@ -108,7 +110,6 @@ class Particle:
         self.x += self.speed_x
         self.y += self.speed_y
         self.lifetime -= 1
-        # Wrap around screen edges
         if self.x < 0:
             self.x = WIDTH
         elif self.x > WIDTH:
@@ -192,9 +193,29 @@ class Slider:
             self.value = self.min_val + (self.handle_rect.x - self.rect.x) / self.rect.width * (self.max_val - self.min_val)
             pygame.mixer.music.set_volume(self.value)
 
+# Loading screen function
+def show_loading_screen(game_name):
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    overlay.fill(OVERLAY_COLOR)
+    screen.blit(overlay, (0, 0))
+
+    # Animate loading text with dots
+    for i in range(3):  # Show for 3 frames (0.5 seconds total at 60 FPS)
+        screen.blit(overlay, (0, 0))
+        loading_text = small_font.render(f"Loading {game_name}" + "." * (i + 1), True, WHITE)
+        loading_shadow = small_font.render(f"Loading {game_name}" + "." * (i + 1), True, SHADOW_COLOR)
+        loading_rect = loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        shadow_rect = loading_shadow.get_rect(center=(loading_rect.centerx + 3, loading_rect.centery + 3))
+        screen.blit(loading_shadow, shadow_rect)
+        screen.blit(loading_text, loading_rect)
+        pygame.display.flip()
+        pygame.time.delay(200)  # Delay for 200ms per frame
+
 # Actions for each button
 def launch_car_game():
     global music_playing
+    show_loading_screen("Car Game")
     if music_playing:
         pygame.mixer.music.pause()
         music_playing = False
@@ -204,6 +225,7 @@ def launch_car_game():
 
 def launch_snake_game():
     global music_playing
+    show_loading_screen("Snake Game")
     if music_playing:
         pygame.mixer.music.pause()
         music_playing = False
@@ -213,16 +235,13 @@ def launch_snake_game():
 
 def launch_flappy_bird():
     global music_playing
+    show_loading_screen("Flappy Bird")
     if music_playing:
         pygame.mixer.music.pause()
         music_playing = False
     subprocess.run([sys.executable, "FlappyBird/flappy_bird.py"])
     pygame.mixer.music.unpause()
     music_playing = True
-
-def quit_launcher():
-    pygame.quit()
-    sys.exit()
 
 def toggle_music():
     global music_playing
@@ -241,6 +260,14 @@ def back_to_main():
     global current_menu
     current_menu = "main"
 
+def show_quit_dialog():
+    global current_menu
+    current_menu = "quit_dialog"
+
+def confirm_quit():
+    pygame.quit()
+    sys.exit()
+
 # Create buttons
 button_width, button_height = 200, 40
 button_spacing = 15
@@ -251,12 +278,16 @@ car_game_button = Button("Car Game", WIDTH // 2 - button_width // 2, start_y, bu
 snake_game_button = Button("Snake Game", WIDTH // 2 - button_width // 2, start_y + button_height + button_spacing, button_width, button_height, launch_snake_game, snake_game_preview)
 flappy_bird_button = Button("Flappy Bird", WIDTH // 2 - button_width // 2, start_y + 2 * (button_height + button_spacing), button_width, button_height, launch_flappy_bird, flappy_bird_preview)
 settings_button = Button("Settings", WIDTH // 2 - button_width // 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, show_settings)
-quit_button = Button("Quit", WIDTH // 2 - button_width // 2, start_y + 4 * (button_height + button_spacing), button_width, button_height, quit_launcher)
+quit_button = Button("Quit", WIDTH // 2 - button_width // 2, start_y + 4 * (button_height + button_spacing), button_width, button_height, show_quit_dialog)
 
 # Settings menu buttons
 music_toggle_button = Button("Music: ON", WIDTH // 2 - button_width // 2, HEIGHT // 2 - 50, button_width, button_height, toggle_music)
 volume_slider = Slider(WIDTH // 2 - 100, HEIGHT // 2, 200, 10, 0.0, 1.0, music_volume)
 back_button = Button("Back", WIDTH // 2 - button_width // 2, HEIGHT // 2 + 50, button_width, button_height, back_to_main)
+
+# Quit dialog buttons
+quit_yes_button = Button("Yes", WIDTH // 2 - button_width - 20, HEIGHT // 2 + 20, button_width, button_height, confirm_quit)
+quit_no_button = Button("No", WIDTH // 2 + 20, HEIGHT // 2 + 20, button_width, button_height, back_to_main)
 
 # Title with animation
 title_text = font.render("SimpleMiniGames", True, WHITE)
@@ -270,6 +301,11 @@ settings_title = font.render("Settings", True, WHITE)
 settings_title_shadow = font.render("Settings", True, SHADOW_COLOR)
 settings_title_rect = settings_title.get_rect(center=(WIDTH // 2, 150))
 
+# Quit dialog title
+quit_dialog_title = font.render("Are you sure you want to quit?", True, WHITE)
+quit_dialog_title_shadow = font.render("Are you sure you want to quit?", True, SHADOW_COLOR)
+quit_dialog_title_rect = quit_dialog_title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+
 # Attribution text
 attribution_text = small_font.render('Music: "Pixel Peeker Polka-faster" by Kevin MacLeod', True, WHITE)
 attribution_shadow = small_font.render('Music: "Pixel Peeker Polka-faster" by Kevin MacLeod', True, SHADOW_COLOR)
@@ -279,7 +315,7 @@ attribution_rect = attribution_text.get_rect(center=(WIDTH // 2, HEIGHT - 20))
 selected_game_preview = None
 
 # Particle effects
-particles = [Particle() for _ in range(20)]  # Create 20 particles
+particles = [Particle() for _ in range(20)]
 
 # Menu state
 current_menu = "main"
@@ -304,6 +340,9 @@ while running:
             music_toggle_button.check_click(event)
             volume_slider.update(event)
             back_button.check_click(event)
+        elif current_menu == "quit_dialog":
+            quit_yes_button.check_click(event)
+            quit_no_button.check_click(event)
 
     # Update particles
     for particle in particles:
@@ -322,6 +361,8 @@ while running:
     title_shadow.set_alpha(title_alpha)
     settings_title.set_alpha(title_alpha)
     settings_title_shadow.set_alpha(title_alpha)
+    quit_dialog_title.set_alpha(title_alpha)
+    quit_dialog_title_shadow.set_alpha(title_alpha)
 
     # Draw the screen
     if background_image:
@@ -340,14 +381,12 @@ while running:
 
     # Draw menu based on current state
     if current_menu == "main":
-        # Draw main menu buttons
         car_game_button.draw(screen)
         snake_game_button.draw(screen)
         flappy_bird_button.draw(screen)
         settings_button.draw(screen)
         quit_button.draw(screen)
 
-        # Draw game preview if a button is hovered
         mouse_pos = pygame.mouse.get_pos()
         if car_game_button.rect.collidepoint(mouse_pos):
             selected_game_preview = car_game_preview
@@ -362,23 +401,31 @@ while running:
             preview_rect = selected_game_preview.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 180))
             screen.blit(selected_game_preview, preview_rect)
     elif current_menu == "settings":
-        # Draw semi-transparent overlay
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill(OVERLAY_COLOR)
         screen.blit(overlay, (0, 0))
 
-        # Draw settings title
         shadow_rect = settings_title_shadow.get_rect(center=(settings_title_rect.centerx + 3, settings_title_rect.centery + 3))
         screen.blit(settings_title_shadow, shadow_rect)
         screen.blit(settings_title, settings_title_rect)
 
-        # Update and draw settings menu buttons
         music_toggle_button.text = "Music: " + ("ON" if music_playing else "OFF")
         music_toggle_button.text_surface = button_font.render(music_toggle_button.text, True, WHITE)
         music_toggle_button.text_shadow = button_font.render(music_toggle_button.text, True, SHADOW_COLOR)
         music_toggle_button.draw(screen)
         volume_slider.draw(screen)
         back_button.draw(screen)
+    elif current_menu == "quit_dialog":
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill(OVERLAY_COLOR)
+        screen.blit(overlay, (0, 0))
+
+        shadow_rect = quit_dialog_title_shadow.get_rect(center=(quit_dialog_title_rect.centerx + 3, quit_dialog_title_rect.centery + 3))
+        screen.blit(quit_dialog_title_shadow, shadow_rect)
+        screen.blit(quit_dialog_title, quit_dialog_title_rect)
+
+        quit_yes_button.draw(screen)
+        quit_no_button.draw(screen)
 
     # Draw attribution with shadow
     shadow_rect = attribution_shadow.get_rect(center=(attribution_rect.centerx + 3, attribution_rect.centery + 3))
