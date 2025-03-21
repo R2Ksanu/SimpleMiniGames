@@ -1,25 +1,25 @@
 # SimpleMiniGames
 
-A collection of mini-games built with Python and Pygame, including Car Game, Snake Game, and Flappy Bird Game. Use the launcher to select and play a game.
+A collection of mini-games built with Python and Pygame, including Car Game, Snake Game, and Flappy Bird Game and more... Use the launcher to select and play a game.
 
 ## Games Included
 - **Car Game**: Navigate a car to collect coins, avoid obstacles, and use power-ups.
 - **Snake Game**: Control a snake to eat food and grow while avoiding collisions.
 - **Flappy Bird Game**: Guide a bird through a series of pipes by flapping its wings.
-
+- **add more games[coming soon ..] 
 ## Prerequisites
 - Python 3.6 or higher
 - Pygame library (`pip install pygame`)
-
+- install git('sudo apt install git')
 ## How to Run
 1. Clone this repository to your local machine:
 
-      - git clone https://github.com/your-username/SimpleMiniGames.git
+      - git clone https://github.com/R2Ksanu/SimpleMiniGames.git
 
-cd SimpleMiniGames
+      - cd SimpleMiniGames
 
 3. Install the required dependencies:
-            -   pip install pygame
+     -   pip install pygame
 
 4. Run the launcher:
       -python launcher.py
