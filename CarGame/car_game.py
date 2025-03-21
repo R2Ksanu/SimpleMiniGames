@@ -197,9 +197,14 @@ def reset_game():
     global car, car_speed, obstacles, coins, powerups, enemy_cars, particles, score, distance_traveled
     global background_y, game_over, shield_active, speed_boost_active, shield_timer, speed_boost_timer
     global obstacle_spawn_timer, coin_spawn_timer, powerup_spawn_timer, enemy_spawn_timer
+    global base_car_speed, background_speed, powerup_duration
+
+    difficulty = DIFFICULTY_LEVELS[selected_difficulty]
+    multipliers = difficulty_multipliers[difficulty]
 
     car = pygame.Rect(WIDTH // 2 - 25, HEIGHT - 150, 50, 80)
-    car_speed = 5
+    base_car_speed = 5 * multipliers["speed"]
+    car_speed = base_car_speed
     obstacles = []
     coins = []
     powerups = []
@@ -208,6 +213,7 @@ def reset_game():
     score = 0
     distance_traveled = 0
     background_y = 0
+    background_speed = 2 * multipliers["speed"]
     game_over = False
     shield_active = False
     speed_boost_active = False
@@ -217,7 +223,8 @@ def reset_game():
     coin_spawn_timer = 0
     powerup_spawn_timer = 0
     enemy_spawn_timer = 0
-    print("Game state reset")
+    powerup_duration = int(600 * multipliers["powerup_duration"])
+    print(f"Game state reset with difficulty: {difficulty}")
 
 # Game objects
 car = pygame.Rect(WIDTH // 2 - 25, HEIGHT - 150, 50, 80)
@@ -265,8 +272,17 @@ key_cooldown = 0
 
 # Main menu variables
 in_main_menu = True
-main_menu_options = ["Play", "How to Play", "Exit"]
+main_menu_options = ["Play", "How to Play", "Difficulty", "Exit"]
 main_menu_selected = 0
+
+# Difficulty settings
+DIFFICULTY_LEVELS = ["Easy", "Medium", "Hard"]
+selected_difficulty = 1  # Default to Medium (index 1)
+difficulty_multipliers = {
+    "Easy": {"spawn_rate": 1.5, "speed": 0.8, "powerup_duration": 1.5},  # Slower, less frequent spawns, longer power-ups
+    "Medium": {"spawn_rate": 1.0, "speed": 1.0, "powerup_duration": 1.0},  # Default settings
+    "Hard": {"spawn_rate": 0.7, "speed": 1.2, "powerup_duration": 0.8}  # Faster, more frequent spawns, shorter power-ups
+}
 
 # Debug timer
 game_timer = 0
@@ -295,6 +311,14 @@ try:
                 main_menu_selected = (main_menu_selected - 1) % len(main_menu_options)
                 key_cooldown = 10
                 print(f"Main menu selected option: {main_menu_options[main_menu_selected]}")
+            if keys[pygame.K_LEFT] and main_menu_options[main_menu_selected] == "Difficulty" and key_cooldown == 0:
+                selected_difficulty = (selected_difficulty - 1) % len(DIFFICULTY_LEVELS)
+                key_cooldown = 10
+                print(f"Difficulty set to: {DIFFICULTY_LEVELS[selected_difficulty]}")
+            if keys[pygame.K_RIGHT] and main_menu_options[main_menu_selected] == "Difficulty" and key_cooldown == 0:
+                selected_difficulty = (selected_difficulty + 1) % len(DIFFICULTY_LEVELS)
+                key_cooldown = 10
+                print(f"Difficulty set to: {DIFFICULTY_LEVELS[selected_difficulty]}")
 
             if keys[pygame.K_RETURN] and key_cooldown == 0:
                 key_cooldown = 10
@@ -304,6 +328,9 @@ try:
                 elif main_menu_options[main_menu_selected] == "How to Play":
                     print("Showing instructions")
                     # We'll add instructions display later
+                elif main_menu_options[main_menu_selected] == "Difficulty":
+                    # Already handled by Left/Right keys
+                    pass
                 elif main_menu_options[main_menu_selected] == "Exit":
                     running = False
                     return_to_launcher = False
@@ -326,10 +353,14 @@ try:
             screen.blit(credits_text, credits_rect)
 
             for i, option in enumerate(main_menu_options):
+                if option == "Difficulty":
+                    text = f"Difficulty: {DIFFICULTY_LEVELS[selected_difficulty]}"
+                else:
+                    text = option
                 color = YELLOW if i == main_menu_selected else WHITE
-                option_text = menu_font.render(option, True, color)
+                option_text = menu_font.render(text, True, color)
                 option_rect = option_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + i * 40))
-                option_shadow = menu_font.render(option, True, DARK_GRAY)
+                option_shadow = menu_font.render(text, True, DARK_GRAY)
                 option_shadow_rect = option_rect.move(2, 2)
                 screen.blit(option_shadow, option_shadow_rect)
                 screen.blit(option_text, option_rect)
@@ -364,12 +395,15 @@ try:
 
                 # Increase difficulty based on distance traveled
                 difficulty_multiplier = 1.0 + (distance_traveled / 1000)
-                background_speed = 2 + (distance_traveled / 500)
-                if background_speed > 5:
-                    background_speed = 5
+                difficulty = DIFFICULTY_LEVELS[selected_difficulty]
+                multipliers = difficulty_multipliers[difficulty]
+                adjusted_background_speed = (2 + (distance_traveled / 500)) * multipliers["speed"]
+                background_speed = min(5 * multipliers["speed"], adjusted_background_speed)
 
-                adjusted_obstacle_spawn_rate = max(30, base_obstacle_spawn_rate / difficulty_multiplier)
-                adjusted_enemy_spawn_rate = max(60, base_enemy_spawn_rate / difficulty_multiplier)
+                adjusted_obstacle_spawn_rate = max(30, (base_obstacle_spawn_rate / difficulty_multiplier) * multipliers["spawn_rate"])
+                adjusted_enemy_spawn_rate = max(60, (base_enemy_spawn_rate / difficulty_multiplier) * multipliers["spawn_rate"])
+                adjusted_coin_spawn_rate = 90 * multipliers["spawn_rate"]
+                adjusted_powerup_spawn_rate = 240 * multipliers["spawn_rate"]
 
                 if shield_active:
                     shield_timer -= 1
@@ -395,12 +429,12 @@ try:
                     obstacles.append(obstacle)
                     obstacle_spawn_timer = 0
 
-                if coin_spawn_timer > 90:
+                if coin_spawn_timer > adjusted_coin_spawn_rate:
                     coin = pygame.Rect(random.randint(0, WIDTH - 20), -50, 20, 20)
                     coins.append(coin)
                     coin_spawn_timer = 0
 
-                if powerup_spawn_timer > 240:
+                if powerup_spawn_timer > adjusted_powerup_spawn_rate:
                     powerup_type = random.choice(["speed", "shield"])
                     powerup = pygame.Rect(random.randint(0, WIDTH - 40), -50, 40, 40)
                     powerups.append((powerup, powerup_type))
