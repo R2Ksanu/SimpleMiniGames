@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMG Car Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(0, 0, 800, 600);
+        ctx.fillStyle = "white";
+        ctx.fillRect(400, 500, 50, 80); // Player car
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMG Flappy Bird</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "green";
+        ctx.fillRect(0, 0, 800, 600);
+        ctx.fillStyle = "white";
+        ctx.fillRect(200, 300, 40, 40); // Bird
+        ctx.fillStyle = "red";
+        ctx.fillRect(600, 0, 60, 300); // Top pipe
+        ctx.fillRect(600, 450, 60, 150); // Bottom pipe
+    </script>
+</body>
+</html>

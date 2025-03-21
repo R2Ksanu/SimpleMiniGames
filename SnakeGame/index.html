@@ -1,0 +1,40 @@
+import pygame
+import random
+
+pygame.init()
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("SMG Snake Game")
+clock = pygame.time.Clock()
+
+# Colors
+GREEN = (0, 255, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+# Snake and food
+snake = [(400, 300)]
+direction = (20, 0)
+food = pygame.Rect(random.randint(0, WIDTH - 20) // 20 * 20, random.randint(0, HEIGHT - 20) // 20 * 20, 20, 20)
+score = 0
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMG Snake Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "green";
+        ctx.fillRect(0, 0, 800, 600);
+        ctx.fillStyle = "white";
+        ctx.fillRect(400, 300, 20, 20); // Snake head
+        ctx.fillStyle = "red";
+        ctx.fillRect(200, 200, 20, 20); // Food
+    </script>
+</body>
+</html>

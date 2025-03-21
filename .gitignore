@@ -1,0 +1,18 @@
+# Ignore Python compiled files
+*.pyc
+__pycache__/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore editor or IDE files
+*.swp
+*.swo
+.idea/
+*.code-workspace
+
+# Ignore build artifacts or virtual environments
+venv/
+env/
+build/
+dist/
