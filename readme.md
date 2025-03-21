@@ -14,7 +14,7 @@ A collection of mini-games built with Python and Pygame, including Car Game, Sna
 ## How to Run
 1. Clone this repository to your local machine:
 
-      - git clone https://github.com/your-username/SimpleMiniGames.git
+      - git clone https://github.com/R2Ksanu/SimpleMiniGames.git
 
       - cd SimpleMiniGames
 
