@@ -76,6 +76,15 @@ except FileNotFoundError:
     particle_image = None
     print("Particle image not found, using default circle")
 
+# Load spinner texture for loading screen
+try:
+    spinner_image = pygame.image.load("LauncherAssets/spinner.png").convert_alpha()
+    spinner_image = pygame.transform.scale(spinner_image, (48, 48))
+    print("Spinner image loaded: spinner.png")
+except FileNotFoundError:
+    spinner_image = None
+    print("Spinner image not found, using default circle")
+
 # Load background music
 music_playing = True
 music_volume = 0.5
@@ -193,24 +202,30 @@ class Slider:
             self.value = self.min_val + (self.handle_rect.x - self.rect.x) / self.rect.width * (self.max_val - self.min_val)
             pygame.mixer.music.set_volume(self.value)
 
-# Loading screen function
+# Loading screen function with spinner
 def show_loading_screen(game_name):
-    # Create semi-transparent overlay
     overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     overlay.fill(OVERLAY_COLOR)
-    screen.blit(overlay, (0, 0))
-
-    # Animate loading text with dots
-    for i in range(3):  # Show for 3 frames (0.5 seconds total at 60 FPS)
+    angle = 0
+    for i in range(30):  # Show for 30 frames (0.5 seconds at 60 FPS)
         screen.blit(overlay, (0, 0))
-        loading_text = small_font.render(f"Loading {game_name}" + "." * (i + 1), True, WHITE)
-        loading_shadow = small_font.render(f"Loading {game_name}" + "." * (i + 1), True, SHADOW_COLOR)
-        loading_rect = loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        # Draw loading text
+        loading_text = small_font.render(f"Loading {game_name}", True, WHITE)
+        loading_shadow = small_font.render(f"Loading {game_name}", True, SHADOW_COLOR)
+        loading_rect = loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 30))
         shadow_rect = loading_shadow.get_rect(center=(loading_rect.centerx + 3, loading_rect.centery + 3))
         screen.blit(loading_shadow, shadow_rect)
         screen.blit(loading_text, loading_rect)
+        # Draw spinning animation
+        if spinner_image:
+            rotated_spinner = pygame.transform.rotate(spinner_image, angle)
+            spinner_rect = rotated_spinner.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 30))
+            screen.blit(rotated_spinner, spinner_rect)
+        else:
+            pygame.draw.circle(screen, WHITE, (WIDTH // 2, HEIGHT // 2 + 30), 20, 2)
+        angle -= 12  # Rotate 12 degrees per frame (360 degrees in 30 frames)
         pygame.display.flip()
-        pygame.time.delay(200)  # Delay for 200ms per frame
+        pygame.time.delay(16)  # Delay for ~60 FPS
 
 # Actions for each button
 def launch_car_game():
