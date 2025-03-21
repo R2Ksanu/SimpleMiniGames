@@ -58,3 +58,7 @@ If you encounter any problems while running the games, please create an issue on
 Background music: "Pixel Peeker Polka - faster" by Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 4.0 License
 Source: https://incompetech.com
+
+Background music: 'Flappy Bird Theme Song' by MORI HIKIKO
+- Source: Audiotool (https://www.audiotool.com/track/flappy_bird_theme_song/favorites)
+- License: Creative Commons Attribution-ShareAlike (CC BY-SA). This song is used under the terms of the CC BY-SA license, which allows use and adaptation as long as proper credit is given and derivative works are shared under the same license.

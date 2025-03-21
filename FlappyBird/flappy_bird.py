@@ -66,11 +66,18 @@ except FileNotFoundError:
 
 try:
     pipe_image = pygame.image.load("FlappyBird/pipe.png").convert_alpha()
-    pipe_image = pygame.transform.scale(pipe_image, (60, HEIGHT))
     print("Pipe image loaded")
 except FileNotFoundError:
     pipe_image = None
     print("Pipe image not found, using default rectangles")
+
+try:
+    coin_image = pygame.image.load("FlappyBird/coin.png").convert_alpha()
+    coin_image = pygame.transform.scale(coin_image, (20, 20))
+    print("Coin image loaded")
+except FileNotFoundError:
+    coin_image = None
+    print("Coin image not found, using default yellow circle")
 
 # Load fonts
 try:
@@ -87,6 +94,7 @@ small_menu_font = pygame.font.SysFont("Comic Sans MS", 20)
 flap_sound = None
 score_sound = None
 crash_sound = None
+coin_sound = None
 
 # Load sound effects
 try:
@@ -110,6 +118,13 @@ except FileNotFoundError:
     crash_sound = None
     print("Crash sound not found")
 
+try:
+    coin_sound = pygame.mixer.Sound("FlappyBird/coin.wav")
+    print("Coin sound loaded")
+except FileNotFoundError:
+    coin_sound = None
+    print("Coin sound not found")
+
 # Load high score
 high_score_file = "FlappyBird/high_score.txt"
 high_score = 0
@@ -124,7 +139,7 @@ if os.path.exists(high_score_file):
 else:
     print("High score file not found, starting with 0")
 
-# Particle class for crash effect
+# Particle class for effects
 class Particle:
     def __init__(self, x, y, color):
         self.x = x
@@ -158,16 +173,18 @@ def create_gradient_surface(width, height, color1, color2, alpha=200):
 
 # Reset game state function
 def reset_game():
-    global bird, velocity, pipes, score, game_over, particles
+    global bird, velocity, pipes, coins, score, game_over, particles, background_x
     difficulty = DIFFICULTY_LEVELS[selected_difficulty]
     multipliers = difficulty_multipliers[difficulty]
 
     bird = pygame.Rect(200, 300, 40, 40)
     velocity = 0
     pipes = [pygame.Rect(WIDTH, random.randint(100, 400), 60, HEIGHT)]
+    coins = []
     score = 0
     game_over = False
     particles = []
+    background_x = 0
     global gravity, pipe_speed, pipe_gap
     gravity = 0.5 * multipliers["gravity"]
     pipe_speed = 3 * multipliers["speed"]
@@ -181,11 +198,13 @@ gravity = 0.5
 pipe_speed = 3
 pipe_gap = 150
 pipes = [pygame.Rect(WIDTH, random.randint(100, 400), 60, HEIGHT)]
+coins = []
 score = 0
 game_over = False
 paused = False
 return_to_launcher = False
 particles = []
+background_x = 0  # Position for scrolling background
 
 # Animation variables
 border_animation = 0
@@ -261,7 +280,7 @@ try:
                     return_to_launcher = False
                     print("Exiting game from main menu")
 
-            # Draw the main menu
+            # Draw the main menu (static background in main menu)
             screen.blit(background_image, (0, 0))
             if showing_instructions:
                 title_text = menu_font.render("How to Play", True, WHITE)
@@ -333,22 +352,49 @@ try:
 
             keys = pygame.key.get_pressed()
             if not game_over and not paused:
+                # Update background position
+                background_x -= pipe_speed * 0.5  # Background moves slower than pipes for parallax effect
+                if background_x <= -WIDTH:
+                    background_x = 0
+
                 # Bird physics
                 velocity += gravity
                 bird.y += velocity
 
-                # Move pipes
+                # Move pipes and spawn coins
                 for pipe in pipes[:]:
                     pipe.x -= pipe_speed
                     if pipe.x < -pipe.width:
                         pipes.remove(pipe)
-                        pipes.append(pygame.Rect(WIDTH, random.randint(100, 400), 60, HEIGHT))
+                        new_pipe = pygame.Rect(WIDTH, random.randint(100, 400), 60, HEIGHT)
+                        pipes.append(new_pipe)
+                        # Spawn a coin in the gap between the pipes
+                        coin_y = new_pipe.y + pipe_gap // 2
+                        coins.append(pygame.Rect(WIDTH + 30, coin_y - 10, 20, 20))
                         score += 1
                         if score_sound:
                             score_sound.play()
                         print(f"Score: {score}")
 
-                # Collision
+                # Move coins
+                for coin in coins[:]:
+                    coin.x -= pipe_speed
+                    if coin.x < -coin.width:
+                        coins.remove(coin)
+
+                # Check for coin collection
+                for coin in coins[:]:
+                    if bird.colliderect(coin):
+                        coins.remove(coin)
+                        score += 5  # +5 points for each coin
+                        if coin_sound:
+                            coin_sound.play()
+                        for _ in range(5):
+                            particle = Particle(coin.centerx, coin.centery, YELLOW)
+                            particles.append(particle)
+                        print(f"Coin collected! Score: {score}")
+
+                # Collision with pipes
                 if (bird.y < 0 or bird.y > HEIGHT or
                     any(bird.colliderect(pygame.Rect(pipe.x, 0, pipe.width, pipe.y)) or
                         bird.colliderect(pygame.Rect(pipe.x, pipe.y + pipe_gap, pipe.width, HEIGHT))
@@ -367,16 +413,34 @@ try:
                     if particle.lifetime <= 0:
                         particles.remove(particle)
 
-            # Draw
-            screen.blit(background_image, (0, 0))
+            # Draw scrolling background
+            screen.blit(background_image, (background_x, 0))
+            screen.blit(background_image, (background_x + WIDTH, 0))
+
             for pipe in pipes:
                 if pipe_image:
-                    screen.blit(pipe_image, (pipe.x, pipe.y + pipe_gap))
-                    flipped_pipe = pygame.transform.flip(pipe_image, False, True)
-                    screen.blit(flipped_pipe, (pipe.x, 0), (0, HEIGHT - pipe.y, pipe.width, pipe.y))
+                    # Top pipe: Scale to fit from top to pipe.y
+                    top_pipe_height = pipe.y
+                    if top_pipe_height > 0:
+                        top_pipe = pygame.transform.scale(pipe_image, (60, top_pipe_height))
+                        top_pipe = pygame.transform.flip(top_pipe, False, True)  # Flip for top pipe
+                        screen.blit(top_pipe, (pipe.x, 0))
+                    # Bottom pipe: Scale to fit from pipe.y + pipe_gap to bottom
+                    bottom_pipe_height = HEIGHT - (pipe.y + pipe_gap)
+                    if bottom_pipe_height > 0:
+                        bottom_pipe = pygame.transform.scale(pipe_image, (60, bottom_pipe_height))
+                        screen.blit(bottom_pipe, (pipe.x, pipe.y + pipe_gap))
                 else:
                     pygame.draw.rect(screen, RED, (pipe.x, 0, pipe.width, pipe.y))
                     pygame.draw.rect(screen, RED, (pipe.x, pipe.y + pipe_gap, pipe.width, HEIGHT))
+
+            # Draw coins
+            for coin in coins:
+                if coin_image:
+                    screen.blit(coin_image, coin)
+                else:
+                    pygame.draw.circle(screen, YELLOW, coin.center, 10)
+
             screen.blit(bird_image, bird)
 
             for particle in particles:
